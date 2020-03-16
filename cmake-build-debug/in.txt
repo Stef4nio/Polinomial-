@@ -1,1 +1,1 @@
-x+(1+2*x)*6+3
+!x{CON}1{DIS}x{CON}!1{IMP}x{CON}0{DIS}1

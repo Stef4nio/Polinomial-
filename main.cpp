@@ -4,6 +4,9 @@
 
 using namespace std;
 
+const char operators[][6] = {"{CON}","{DIS}","{IMP}","{EQV}"};
+const int OperatorsAmount = 4;
+
 struct BinaryTreeNode
 {
     char* data;
@@ -21,10 +24,38 @@ bool isLetter(char ch)
     return ((ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z'));
 }
 
-//TODO: remove or rework after realisation of binary operators
-bool isOperator(char ch)
+bool isOperator(char* string)
 {
-    return (ch=='+'||ch=='-'||ch=='*'||ch=='/');
+    for(int i = 0; i< OperatorsAmount;i++)
+    {
+        bool isEqual = true;
+        for(int j = 0;j<5;j++)
+        {
+            if(operators[i][j]!=string[j])
+            {
+                isEqual = false;
+            }
+        }
+        if(isEqual)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool hasMorePriority(const char* firstOperator, const char* secondOperator)
+{
+    for(int i = 0; i < OperatorsAmount;i++)
+    {
+        if(strcmp(firstOperator,operators[i])==0)
+        {
+            return true;
+        } else if(strcmp(secondOperator,operators[i]) == 0)
+        {
+            return false;
+        }
+    }
 }
 
 BinaryTreeNode* transformStringToBinaryTree(char** string);
@@ -34,6 +65,12 @@ BinaryTreeNode* createOperand(char** string)
     BinaryTreeNode* result = new BinaryTreeNode;
     char* operand = new char[20];
     int i = 0;
+    bool isNegative = false;
+    if((**string)=='!')
+    {
+        isNegative = true;
+        (*string)++;
+    }
     if((**string) == '(')
     {
         (*string)++;
@@ -48,16 +85,35 @@ BinaryTreeNode* createOperand(char** string)
     }
     operand[i] = '\0';
     result->data = operand;
+    if(isNegative)
+    {
+        BinaryTreeNode* notOperandNode = new BinaryTreeNode;
+        notOperandNode->data = new char[2]{'!','\0'};
+        notOperandNode->leftNode = result;
+        result = notOperandNode;
+    }
     return result;
 }
 
 BinaryTreeNode* createOperator(char** string)
 {
-    //TODO: edit this part of code to work with binary operators
     BinaryTreeNode* result = new BinaryTreeNode;
-    result->data = new char;
-    result->data[0] = (**string);
-    (*string)++;
+    result->data = new char[6];
+    /*if((**string) == '!')
+    {
+        result->data[0] = '!';
+        result->data[1] = '\0';
+        (*string)++;
+    }
+    else
+    {*/
+    for(int i = 0;i<5;i++)
+    {
+        result->data[i] = (**string);
+        (*string)++;
+    }
+    result->data[5] = '\0';
+    //}
     return result;
 }
 
@@ -67,20 +123,20 @@ BinaryTreeNode* transformStringToBinaryTree(char** string)
     bool isInit = false;
     while((**string))
     {
-        if((**string)==')')
-        {
-            (*string)++;
-            return result;
-        }
         if (!isInit)
         {
             result = createOperand(string);
             isInit = true;
         }
-        else if (isOperator((**string)))
+        else if((**string)==')')
+        {
+            (*string)++;
+            return result;
+        }
+        else if (isOperator((*string)))
         {
             BinaryTreeNode *temp = createOperator(string);
-            if (temp->data[0] == '+' || temp->data[0] == '-' || !isOperator(result->data[0]))
+            if (!isOperator(result->data)  || !hasMorePriority(temp->data,result->data))
             {
                 temp->leftNode = result;
                 result = temp;
