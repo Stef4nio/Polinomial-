@@ -1,1 +1,1 @@
-!x{CON}1{DIS}x{CON}!1{IMP}x{CON}0{DIS}1
+x{CON}0{EQV}(!!x{CON}!y{IMP}0)
